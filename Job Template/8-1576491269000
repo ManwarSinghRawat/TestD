@@ -1,0 +1,1948 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-specification xmlns="http://com.fico/dmip/jobsAndJobSteps" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://com.fico/dmip/jobsAndJobSteps SampleMergedJobTemplate.xsd">
+    <diagram-state>
+        <![CDATA[{"v":"1.0","s":0.6080075198726289,"p":"-448.5352720390797 -8","d":90,"j":[{"i":"Extract-Performance-Fields","p":"69.5 178"},{"i":"CreateNUpdate-Performance-ContextualProfile","p":"412.5 799.2673613326755"},{"i":"CreateNUpdate-Performance-ContextualProfile-Error","p":"1476.5 1020.9010419990136"},{"i":"Ingest-MonthlyData","p":"1367 1306.540660248873","g":"gr-1"},{"i":"Performance-ContextualProfile-Dump","p":"0 1375.1684033316894"},{"i":"SampleFilterRecords","p":"46.99999999999994 1020.9010419990132"},{"i":"Unpack-CreditCard-Performance-Data","p":"39.5 0"},{"i":"CreditCardBatchInitiator","p":"1358.5 1484.540660248873","g":"gr-1"},{"i":"AllRecordCounter","p":"344.7500000000001 1041.2732989161968","g":"gr-2"},{"i":"SuccessCounter","p":"624.75 1041.2732989161968","g":"gr-2"},{"i":"ErrorCounter","p":"904.7500000000002 1041.2732989161968","g":"gr-2"},{"i":"CommonError","p":"1047 1375.1684033316894"},{"i":"CDEBatchCcSpcPerfMetrics","p":"386.99999999999994 1375.1684033316894"},{"i":"Validations","p":"1827.0000000000002 420.0059375835218","g":"gr-3"},{"i":"Validation-Flow","p":"1706.9999999999998 598.0059375835219","g":"gr-3"},{"i":"InvalidRecords","p":"1527 799.2673613326755"},{"i":"ValidationErrorCounter","p":"1180.2500000000002 1041.2732989161968","g":"gr-2"}],"l":[{"f":"Extract-Performance-Fields","t":"Validations","s":"TXN-Fields"},{"f":"Extract-Performance-Fields","t":"AllRecordCounter","s":"TXN-Fields"},{"f":"CreateNUpdate-Performance-ContextualProfile","t":"SampleFilterRecords","s":"s-1-B"},{"f":"CreateNUpdate-Performance-ContextualProfile","t":"SuccessCounter","s":"s-1-B"},{"f":"CreateNUpdate-Performance-ContextualProfile","t":"CreateNUpdate-Performance-ContextualProfile-Error","s":"s-1-E"},{"f":"CreateNUpdate-Performance-ContextualProfile","t":"ErrorCounter","s":"s-1-E"},{"f":"Ingest-MonthlyData","t":"CreditCardBatchInitiator","s":"s-2-B"},{"f":"SampleFilterRecords","t":"Performance-ContextualProfile-Dump","s":"s-3-B"},{"f":"Unpack-CreditCard-Performance-Data","t":"Extract-Performance-Fields","s":"s-4-B"},{"f":"AllRecordCounter","t":"CDEBatchCcSpcPerfMetrics","s":"s-5-B"},{"f":"AllRecordCounter","t":"CommonError","s":"s-2-E"},{"f":"SuccessCounter","t":"CDEBatchCcSpcPerfMetrics","s":"s-6-B"},{"f":"SuccessCounter","t":"CommonError","s":"s-3-E"},{"f":"ErrorCounter","t":"CDEBatchCcSpcPerfMetrics","s":"s-7-B"},{"f":"ErrorCounter","t":"CommonError","s":"s-4-E"},{"f":"Validations","t":"CommonError","s":"s-5-E"},{"f":"Validations","t":"Validation-Flow","s":"CheckIfValid"},{"f":"Validation-Flow","t":"CommonError","s":"s-6-E"},{"f":"Validation-Flow","t":"CreateNUpdate-Performance-ContextualProfile","s":"validStream"},{"f":"Validation-Flow","t":"InvalidRecords","s":"inValidStream"},{"f":"Validation-Flow","t":"ValidationErrorCounter","s":"inValidStream"},{"f":"ValidationErrorCounter","t":"CDEBatchCcSpcPerfMetrics","s":"s-8-B"},{"f":"ValidationErrorCounter","t":"CommonError","s":"s-7-E"}],"g":[{"i":"gr-1","n":"Batch Initiator","e":true,"p":"1335.238576250846 1242.5347226653516"},{"i":"gr-2","n":"Batch Metrics","e":true,"p":"321.48857625084605 977.2673613326754"},{"i":"gr-3","n":"Validation","e":true,"p":"1683.7385762508459 356.0000000000003"}],"m":{"x":{"p":"1600 0","d":1600,"l":1601},"y":{"p":"0 1600","d":1600,"l":1601}}}]]>
+    </diagram-state>
+    <job-specification-version>
+        <version>1.0</version>
+        <dmip-version-since>1.0</dmip-version-since>
+        <organization>FICO</organization>
+    </job-specification-version>
+    <name>CDEBatchCcSpcPerformanceV1</name>
+    <description>Credit Card performance batch job</description>
+    <job-params>
+        <parameter>
+            <name>dmip.state.qos.consistency</name>
+            <value>true</value>
+        </parameter>
+        <parameter>
+            <name>dmip.state.qos.persistence</name>
+            <value>Immediate</value>
+        </parameter>
+        <parameter>
+            <name>dmip.visualization.store.rolling.unit</name>
+            <value>Day</value>
+        </parameter>
+        <parameter>
+            <name>dmip.non.tx.job.acker.enforced</name>
+            <value>false</value>
+        </parameter>
+        <parameter>
+            <name>dmip.cache.group.name</name>
+            <value>SCB_Dev_Group01</value>
+        </parameter>
+        <parameter>
+            <name>dmip.visualization.store.auto.cleanup.interval</name>
+            <value>25</value>
+        </parameter>
+    </job-params>
+    <job-steps>
+        <job-step parallelism-hint="1" xsi:type="csv-normalization-job-step">
+            <description>Extract the parts of an line entry for Credit Card Performance file. The following are the fields.
+
+CUST_ID	
+CUST_ID_TYPE_DESC
+RM_ID
+ACCT_NUM
+OPEN_DT
+PROD_CD
+SUB_PROD_CD
+ACCT_STS
+CR_LIMIT_AMT
+STMT_BAL
+CRRNT_BAL
+5_PDUE_AMT
+30_PDUE_AMT	
+60_PDUE_AMT	
+90_PDUE_AMT
+120_PDUE_AMT
+150_PDUE_AMT
+180_PDUE_AMT
+210_PDUE_AMT
+BLOCK_CD
+WOFF_DT
+BILL_CD
+AS_OF_DT</description>
+            <job-step-id>Extract-Performance-Fields</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="csv-normalization-job-step-params">
+                    <delimiter>|</delimiter>
+                    <text-quote>"</text-quote>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>cust_id</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>0</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>cust_id_type_desc</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>2</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>rm_id</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>3</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>acct_num</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>4</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>open_dt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>5</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>oc_cust</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>6</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>oc_acct</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>7</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>prod_cd</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>8</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>sub_prod_cd</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>9</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>acct_sts</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>10</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>cr_limit_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>11</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>stmt_bal</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>12</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>crrnt_bal</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>13</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>5_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>14</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>30_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>15</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>60_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>16</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>90_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>17</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>120_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>18</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>150_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>19</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>180_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>20</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>210_pdue_amt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>21</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>block_cd</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>22</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>woff_dt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>23</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>bill_cd</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>24</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="csv-normalization-to-normalize-js-required-field">
+                                <name>to-normalize</name>
+                                <input-field>creditCardPerformanceLineEntry</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-normalization-normalized-field-js-generated-field">
+                                <output-stream-id>TXN-Fields</output-stream-id>
+                                <name>normalized-field</name>
+                                <output-field>as_of_dt</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="fieldPosition" xsi:type="csv-normalization-process-paramType">
+                                <value>25</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>TXN-Fields</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="true">cust_id_type_desc</field>
+                        <field data-type="string" keep="true">rm_id</field>
+                        <field data-type="string" keep="true">acct_num</field>
+                        <field data-type="string" keep="true">open_dt</field>
+                        <field data-type="string" keep="true">oc_cust</field>
+                        <field data-type="string" keep="true">oc_acct</field>
+                        <field data-type="string" keep="true">prod_cd</field>
+                        <field data-type="string" keep="true">sub_prod_cd</field>
+                        <field data-type="string" keep="true">acct_sts</field>
+                        <field data-type="string" keep="true">cr_limit_amt</field>
+                        <field data-type="string" keep="true">stmt_bal</field>
+                        <field data-type="string" keep="true">crrnt_bal</field>
+                        <field data-type="string" keep="true">5_pdue_amt</field>
+                        <field data-type="string" keep="true">30_pdue_amt</field>
+                        <field data-type="string" keep="true">60_pdue_amt</field>
+                        <field data-type="string" keep="true">90_pdue_amt</field>
+                        <field data-type="string" keep="true">120_pdue_amt</field>
+                        <field data-type="string" keep="true">150_pdue_amt</field>
+                        <field data-type="string" keep="true">180_pdue_amt</field>
+                        <field data-type="string" keep="true">210_pdue_amt</field>
+                        <field data-type="string" keep="true">block_cd</field>
+                        <field data-type="string" keep="true">woff_dt</field>
+                        <field data-type="string" keep="true">bill_cd</field>
+                        <field data-type="string" keep="true">as_of_dt</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>Validations</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                        <stream-consumer>
+                            <consuming-job-step-id>AllRecordCounter</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.normalization.CSVNormalizationStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" are-builtin-fields-for-error-stream="true" xsi:type="contextual-profile-job-step">
+            <description>Create and Update entry based on PrimaryCustomerId and store the data in CP
+
+CUST_ID	
+CUST_ID_TYPE_DESC
+RM_ID
+ACCT_NUM
+OPEN_DT
+PROD_CD
+SUB_PROD_CD
+ACCT_STS
+CR_LIMIT_AMT
+STMT_BAL
+CRRNT_BAL
+5_PDUE_AMT
+30_PDUE_AMT	
+60_PDUE_AMT	
+90_PDUE_AMT
+120_PDUE_AMT
+150_PDUE_AMT
+180_PDUE_AMT
+210_PDUE_AMT
+BLOCK_CD
+WOFF_DT
+BILL_CD
+AS_OF_DT</description>
+            <job-step-id>CreateNUpdate-Performance-ContextualProfile</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="contextual-profile-job-step-params">
+                    <time-to-live>0</time-to-live>
+                    <profile isStateStore="true">OB_CC_SPC_ACCT_Profile</profile>
+                    <function-language>JAVASCRIPT</function-language>
+                    <window-unit>NONE</window-unit>
+                    <profile-key-option>FUNCTION</profile-key-option>
+                    <profile-key-FUNCTION>
+                        <![CDATA[var cust_id_type_desc = fields['cust_id_type_desc'];
+cust_id_type_desc = cust_id_type_desc.replace(/ /g, '_')
+return cust_id_type_desc + ':' +fields['cust_id'];
+]]>
+                    </profile-key-FUNCTION>
+                    <aggregation-option>CUSTOM</aggregation-option>
+                    <aggregation-field-or-function-CUSTOM>
+                        <![CDATA[function profileAggregation(profileJson, fields) {
+
+    var profile = {};
+	if (profileJson != null) {
+        profile = JSON.parse(profileJson);
+    }
+
+    if (!profile.hasOwnProperty("performance")) {
+        profile["performance"] = [];
+    }
+    var creditCardPerformanceArr = profile["performance"];
+    var creditCardHistoryEntry = {
+        "AsOfDate": parseDate(fields['as_of_dt']),
+        "RM_ID": fields['rm_id'],
+        "OPEN_DT": fields['open_dt'],
+        "OC_CUST": fields['oc_cust'],
+        "OC_ACCT": fields['oc_acct'],
+        "PROD_CD": fields['prod_cd'],
+        "SUB_PROD_CD": fields['sub_prod_cd'],
+        "ACCT_STS": fields['acct_sts'],
+        "CR_LIMIT_AMT": fields['cr_limit_amt'],
+        "STMT_BAL": fields['stmt_bal'],
+        "CRRNT_BAL": fields['crrnt_bal'],
+        "5_PDUE_AMT": fields['5_pdue_amt'],
+        "30_PDUE_AMT": fields['30_pdue_amt'],
+        "60_PDUE_AMT": fields['60_pdue_amt'],
+        "90_PDUE_AMT": fields['90_pdue_amt'],
+        "120_PDUE_AMT": fields['120_pdue_amt'],
+        "150_PDUE_AMT": fields['150_pdue_amt'],
+        "180_PDUE_AMT": fields['180_pdue_amt'],
+        "210_PDUE_AMT": fields['210_pdue_amt'],
+        "BLOCK_CD": fields['block_cd'],
+        "WOFF_DT": fields['woff_dt'],
+        "BILL_CD": fields['bill_cd']
+    }
+
+    var existingAcct = false;
+    for (var i=0; i< creditCardPerformanceArr.length; i++) {
+        if (fields['acct_num'] == creditCardPerformanceArr[i].ACCT_NUM) {
+            existingAcct = true;
+
+            var modified = false;
+            for (var j = 0; j < creditCardPerformanceArr[i].pData.length; j++) {
+                if (creditCardHistoryEntry.AsOfDate == creditCardPerformanceArr[i].pData[j].AsOfDate) {
+                    creditCardPerformanceArr[i].pData[j] = creditCardHistoryEntry;
+                    modified = true;
+                    break;
+                }
+            }
+
+            if (!modified) {
+                creditCardPerformanceArr[i].pData.push(creditCardHistoryEntry);
+                creditCardPerformanceArr[i].pData = sortByKey(creditCardPerformanceArr[i].pData, 'AsOfDate');
+                creditCardPerformanceArr[i].pData.splice(12);
+            }
+        }
+    } 
+
+    if (!existingAcct) {
+        creditCardPerformanceArr.push({
+            "ACCT_NUM": fields['acct_num'],
+            "pData": [creditCardHistoryEntry]
+        });
+    }
+	
+	return JSON.stringify(profile);
+}]]>
+                    </aggregation-field-or-function-CUSTOM>
+                    <custom-function-script>
+                        <![CDATA[function sortByKey(array, key) {
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+    });
+}
+
+function sortByAsOfDate(creditCardPerformanceArr){
+     for (var i=0; i< creditCardPerformanceArr.length; i++) {
+        var pDataRecord = creditCardPerformanceArr[i].pData;
+        sortByKey(pDataRecord,'AsOfDate');
+     }
+}
+
+function parseDate(date){
+	date = new Date(date);
+	return "" + date.toISOString().split('T')[0];
+}
+]]>
+                    </custom-function-script>
+                    <error-stream-name>s-1-E</error-stream-name>
+                </job-step-params>
+                <job-step-state-metadata xsi:type="job-step-stateMetadataType">
+                    <state-name name="ContextualProfile" ttl="0" shared="true"/>
+                    <state-columns xsi:type="state-columnsDefType">
+                        <state-column name="cp_id" column-type="PRIMARYKEY" data-type="string" encrypt="false" enable-index="false"/>
+                        <state-column name="cp_value" column-type="DATACOLUMN" data-type="any" encrypt="false" enable-index="false"/>
+                    </state-columns>
+                </job-step-state-metadata>
+                <processing-units>
+                    <processing-unit>
+                        <generated-fields>
+                            <generated-field xsi:type="contextual-profile-js-generated-field">
+                                <output-stream-id>s-1-B</output-stream-id>
+                                <name>contextual-profile-output-field</name>
+                                <output-field>profileData</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                        <process-params>
+                            <parameter name="generator-key-option" xsi:type="contextual-profile-process-paramType">
+                                <value>FUNCTION</value>
+                            </parameter>
+                            <parameter name="generator-key-FUNCTION" xsi:type="generator-key-FUNCTION-type">
+                                <value>
+                                    <![CDATA[function generator1Key(fields) {
+	var cust_id_type_desc = fields['cust_id_type_desc'];
+	cust_id_type_desc = cust_id_type_desc.replace(/ /g, '_')
+	var field1 =  cust_id_type_desc + ':' +fields['cust_id'];
+	var profileKeys = {};
+    profileKeys['profile1'] = field1;
+    return profileKeys;
+}]]>
+                                </value>
+                            </parameter>
+                            <parameter name="generator-function-FUNCTION" xsi:type="generator-function-FUNCTION-type">
+                                <value>
+                                    <![CDATA[function generator1Function(profilesMap, fields) {
+	return profilesMap;
+}]]>
+                                </value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-1-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="true">cust_id_type_desc</field>
+                        <field data-type="string" keep="true">rm_id</field>
+                        <field data-type="string" keep="true">acct_num</field>
+                        <field data-type="string" keep="true">open_dt</field>
+                        <field data-type="string" keep="true">oc_cust</field>
+                        <field data-type="string" keep="true">oc_acct</field>
+                        <field data-type="string" keep="true">prod_cd</field>
+                        <field data-type="string" keep="true">sub_prod_cd</field>
+                        <field data-type="string" keep="true">acct_sts</field>
+                        <field data-type="string" keep="true">cr_limit_amt</field>
+                        <field data-type="string" keep="true">stmt_bal</field>
+                        <field data-type="string" keep="true">crrnt_bal</field>
+                        <field data-type="string" keep="true">5_pdue_amt</field>
+                        <field data-type="string" keep="true">30_pdue_amt</field>
+                        <field data-type="string" keep="true">60_pdue_amt</field>
+                        <field data-type="string" keep="true">90_pdue_amt</field>
+                        <field data-type="string" keep="true">120_pdue_amt</field>
+                        <field data-type="string" keep="true">150_pdue_amt</field>
+                        <field data-type="string" keep="true">180_pdue_amt</field>
+                        <field data-type="string" keep="true">210_pdue_amt</field>
+                        <field data-type="string" keep="true">block_cd</field>
+                        <field data-type="string" keep="true">woff_dt</field>
+                        <field data-type="string" keep="true">bill_cd</field>
+                        <field data-type="string" keep="true">as_of_dt</field>
+                        <field data-type="boolean" keep="true">valid</field>
+                        <field data-type="string" keep="true">error_message</field>
+                        <field data-type="string" keep="true">profileData</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>SampleFilterRecords</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                        <stream-consumer>
+                            <consuming-job-step-id>SuccessCounter</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream stream-type="error">
+                    <stream-id>s-1-E</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="true">as_of_dt</field>
+                        <field data-type="string" keep="true">error-message</field>
+                        <field data-type="any" keep="true">error-tuple</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CreateNUpdate-Performance-ContextualProfile-Error</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                        <stream-consumer>
+                            <consuming-job-step-id>ErrorCounter</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.contextual.profile.ContextualProfileJobStepStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" xsi:type="visualization-store-job-step">
+            <description>Indexes data into elasticsearch the dump of the contextual profile</description>
+            <job-step-id>CreateNUpdate-Performance-ContextualProfile-Error</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="visualization-store-job-step-params">
+                    <es-type-name>CDEBatchCCSPCPerformanceContextualProfileError</es-type-name>
+                    <batch-size>100</batch-size>
+                    <idle-time>5</idle-time>
+                </job-step-params>
+            </configuration>
+            <step-type>OUTBOUND</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.visualization.VisualizationStoreStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>true</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" processing-iteration-count="1" xsi:type="ftp-inbound-job-step">
+            <description>Fetch the Credit Card Performance data on monthly basis from FTP source</description>
+            <job-step-id>Ingest-MonthlyData</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="ftp-inbound-job-step-params">
+                    <username>scbuser</username>
+                    <password secure="true">ND3HioQ66oHF2ddlDIqqZ1oEha6AQUJUNLOU7jmraaM=</password>
+                    <host>ec2-13-232-157-103.ap-south-1.compute.amazonaws.com</host>
+                    <port>2222</port>
+                    <file-path>/upload</file-path>
+                    <file-pattern>OB_CC_SPC_ACCT_PRFL_*.csv</file-pattern>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <generated-fields>
+                            <generated-field xsi:type="ftp-inbound-msg-or-path-js-generated-field">
+                                <output-stream-id>s-2-B</output-stream-id>
+                                <name>msg-or-path</name>
+                                <output-field>msg-or-path</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                            <generated-field xsi:type="ftp-inbound-is-ref-js-generated-field">
+                                <output-stream-id>s-2-B</output-stream-id>
+                                <name>is-ref</name>
+                                <output-field>is-ref</output-field>
+                                <data-type>boolean</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-2-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">msg-or-path</field>
+                        <field data-type="boolean" keep="true">is-ref</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CreditCardBatchInitiator</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>INBOUND</step-type>
+            <tuple-processing-type>FULL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.injobstep.ftp.FTPInboundStrategyBuilder</job-step-builder-class>
+            <schedulable>true</schedulable>
+            <requires-data-source>true</requires-data-source>
+            <schedule>
+                <cron seconds="0" minutes="*" hours="*" dayOfMonth="*" month="*" dayOfWeek="?" year="*"></cron>
+            </schedule>
+        </job-step>
+        <job-step parallelism-hint="1" xsi:type="visualization-store-job-step">
+            <description>Indexes data into elasticsearch for any errors reported</description>
+            <job-step-id>Performance-ContextualProfile-Dump</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="visualization-store-job-step-params">
+                    <es-type-name>CDEBatchCCSPCPerformanceSuccess</es-type-name>
+                    <batch-size>500</batch-size>
+                    <idle-time>5</idle-time>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="visualization-store-visualization-field-js-required-field">
+                                <name>to-visualize</name>
+                                <input-field>profileData</input-field>
+                            </required-field>
+                        </required-fields>
+                        <process-params>
+                            <parameter name="language-analyzer" xsi:type="visualization-store-language-analyzer-process-paramType">
+                                <value>standard</value>
+                            </parameter>
+                            <parameter name="use-raw" xsi:type="visualization-store-use-raw-sub-field-process-paramType">
+                                <value>false</value>
+                            </parameter>
+                        </process-params>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <step-type>OUTBOUND</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.visualization.VisualizationStoreStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>true</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" processing-iteration-count="0" xsi:type="stream-filter-job-step">
+            <description>Filter tuples from the input stream. The input tuple is emitted into the single output stream based on the filter condition and the emit action.</description>
+            <job-step-id>SampleFilterRecords</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="stream-filter-job-step-params">
+                    <condition-type>SCRIPT</condition-type>
+                    <filter-language>JAVASCRIPT</filter-language>
+                    <filter-condition>
+                        <![CDATA[function filter(fields) {
+    var num = Math.floor(Math.random() * 100 ) + 1;
+	return (num%20) === 0;
+}]]>
+                    </filter-condition>
+                    <on-match>RETAIN</on-match>
+                </job-step-params>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-3-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="true">cust_id_type_desc</field>
+                        <field data-type="string" keep="true">rm_id</field>
+                        <field data-type="string" keep="true">acct_num</field>
+                        <field data-type="string" keep="true">open_dt</field>
+                        <field data-type="string" keep="true">oc_cust</field>
+                        <field data-type="string" keep="true">oc_acct</field>
+                        <field data-type="string" keep="true">prod_cd</field>
+                        <field data-type="string" keep="true">sub_prod_cd</field>
+                        <field data-type="string" keep="true">acct_sts</field>
+                        <field data-type="string" keep="true">cr_limit_amt</field>
+                        <field data-type="string" keep="true">stmt_bal</field>
+                        <field data-type="string" keep="true">crrnt_bal</field>
+                        <field data-type="string" keep="true">5_pdue_amt</field>
+                        <field data-type="string" keep="true">30_pdue_amt</field>
+                        <field data-type="string" keep="true">60_pdue_amt</field>
+                        <field data-type="string" keep="true">90_pdue_amt</field>
+                        <field data-type="string" keep="true">120_pdue_amt</field>
+                        <field data-type="string" keep="true">150_pdue_amt</field>
+                        <field data-type="string" keep="true">180_pdue_amt</field>
+                        <field data-type="string" keep="true">210_pdue_amt</field>
+                        <field data-type="string" keep="true">block_cd</field>
+                        <field data-type="string" keep="true">woff_dt</field>
+                        <field data-type="string" keep="true">bill_cd</field>
+                        <field data-type="string" keep="true">as_of_dt</field>
+                        <field data-type="boolean" keep="true">valid</field>
+                        <field data-type="string" keep="true">error_message</field>
+                        <field data-type="string" keep="true">profileData</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>Performance-ContextualProfile-Dump</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.filter.StreamFilterStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" processing-iteration-count="1" xsi:type="csv-unpack-inbound-job-step">
+            <description>The CSV unpack inbound job step reads, parses a batch of CSV files downloaded by inbound job step such as FtpInbound job step and extracts their CSV lines. Each CSV line is emitted as a single tuple. These tuples are passed downstream to have their data extracted by the csv normalization job step. This job step will trace each file until all of the tuples are processed, then it will kill the whole job to save resources.</description>
+            <job-step-id>Unpack-CreditCard-Performance-Data</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="csv-unpack-inbound-job-step-params">
+                    <header>true</header>
+                    <inbound-jobstep-id>Ingest-MonthlyData</inbound-jobstep-id>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <generated-fields>
+                            <generated-field xsi:type="csv-unpack-inbound-unpacked-line-js-generated-field">
+                                <output-stream-id>s-4-B</output-stream-id>
+                                <name>unpacked-line</name>
+                                <output-field>creditCardPerformanceLineEntry</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-4-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">creditCardPerformanceLineEntry</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>Extract-Performance-Fields</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>INBOUND</step-type>
+            <tuple-processing-type>FULL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.injobstep.csvunpack.CSVUnpackInboundStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" processing-iteration-count="1" xsi:type="batch-initiator-job-step">
+            <description>The batch initiator job step terminates any stream and change inbound job status when all the input tuples received.</description>
+            <job-step-id>CreditCardBatchInitiator</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="batch-initiator-job-step-params">
+                    <inbound-jobstep-id>Ingest-MonthlyData</inbound-jobstep-id>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="batch-initiator-msg-or-path-js-required-field">
+                                <name>msg-or-path</name>
+                                <input-field>msg-or-path</input-field>
+                            </required-field>
+                            <required-field xsi:type="batch-initiator-is-ref-js-required-field">
+                                <name>is-ref</name>
+                                <input-field>is-ref</input-field>
+                            </required-field>
+                        </required-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <step-type>OUTBOUND</step-type>
+            <tuple-processing-type>FULL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.batchinitiator.BatchInitiatorStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" are-builtin-fields-for-error-stream="true" xsi:type="script-job-step">
+            <description>The script job step uses JSR223 specification implemented in JDK to execute different languages script and get result added to the output stream.</description>
+            <job-step-id>AllRecordCounter</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="script-job-step-params">
+                    <functionScript>
+                        <![CDATA[function initializeTuple() {
+}
+function executeIteration(asOfDate) {
+    return "All";
+}]]>
+                    </functionScript>
+                    <functionLanguage>JAVASCRIPT</functionLanguage>
+                    <error-stream-name>s-2-E</error-stream-name>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="script-input-js-required-field">
+                                <name>script-input-field</name>
+                                <input-field>as_of_dt</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="script-js-generated-field">
+                                <output-stream-id>s-5-B</output-stream-id>
+                                <name>script-output-field</name>
+                                <output-field>counter</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-5-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="false">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="false">cust_id_type_desc</field>
+                        <field data-type="string" keep="false">rm_id</field>
+                        <field data-type="string" keep="false">acct_num</field>
+                        <field data-type="string" keep="false">open_dt</field>
+                        <field data-type="string" keep="false">oc_cust</field>
+                        <field data-type="string" keep="false">oc_acct</field>
+                        <field data-type="string" keep="false">prod_cd</field>
+                        <field data-type="string" keep="false">sub_prod_cd</field>
+                        <field data-type="string" keep="false">acct_sts</field>
+                        <field data-type="string" keep="false">cr_limit_amt</field>
+                        <field data-type="string" keep="false">stmt_bal</field>
+                        <field data-type="string" keep="false">crrnt_bal</field>
+                        <field data-type="string" keep="false">5_pdue_amt</field>
+                        <field data-type="string" keep="false">30_pdue_amt</field>
+                        <field data-type="string" keep="false">60_pdue_amt</field>
+                        <field data-type="string" keep="false">90_pdue_amt</field>
+                        <field data-type="string" keep="false">120_pdue_amt</field>
+                        <field data-type="string" keep="false">150_pdue_amt</field>
+                        <field data-type="string" keep="false">180_pdue_amt</field>
+                        <field data-type="string" keep="false">210_pdue_amt</field>
+                        <field data-type="string" keep="false">block_cd</field>
+                        <field data-type="string" keep="false">woff_dt</field>
+                        <field data-type="string" keep="false">bill_cd</field>
+                        <field data-type="string" keep="false">as_of_dt</field>
+                        <field data-type="string" keep="true">counter</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CDEBatchCcSpcPerfMetrics</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream stream-type="error">
+                    <stream-id>s-2-E</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">error-message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CommonError</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.script.ScriptStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" are-builtin-fields-for-error-stream="true" xsi:type="script-job-step">
+            <description>The script job step uses JSR223 specification implemented in JDK to execute different languages script and get result added to the output stream.</description>
+            <job-step-id>SuccessCounter</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="script-job-step-params">
+                    <functionScript>
+                        <![CDATA[function initializeTuple() {
+}
+function executeIteration() {
+    return "Success";
+}]]>
+                    </functionScript>
+                    <functionLanguage>JAVASCRIPT</functionLanguage>
+                    <error-stream-name>s-3-E</error-stream-name>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="script-input-js-required-field">
+                                <name>script-input-field</name>
+                                <input-field>cust_id</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="script-js-generated-field">
+                                <output-stream-id>s-6-B</output-stream-id>
+                                <name>script-output-field</name>
+                                <output-field>counter</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-6-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="false">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="false">cust_id_type_desc</field>
+                        <field data-type="string" keep="false">rm_id</field>
+                        <field data-type="string" keep="false">acct_num</field>
+                        <field data-type="string" keep="false">open_dt</field>
+                        <field data-type="string" keep="false">oc_cust</field>
+                        <field data-type="string" keep="false">oc_acct</field>
+                        <field data-type="string" keep="false">prod_cd</field>
+                        <field data-type="string" keep="false">sub_prod_cd</field>
+                        <field data-type="string" keep="false">acct_sts</field>
+                        <field data-type="string" keep="false">cr_limit_amt</field>
+                        <field data-type="string" keep="false">stmt_bal</field>
+                        <field data-type="string" keep="false">crrnt_bal</field>
+                        <field data-type="string" keep="false">5_pdue_amt</field>
+                        <field data-type="string" keep="false">30_pdue_amt</field>
+                        <field data-type="string" keep="false">60_pdue_amt</field>
+                        <field data-type="string" keep="false">90_pdue_amt</field>
+                        <field data-type="string" keep="false">120_pdue_amt</field>
+                        <field data-type="string" keep="false">150_pdue_amt</field>
+                        <field data-type="string" keep="false">180_pdue_amt</field>
+                        <field data-type="string" keep="false">210_pdue_amt</field>
+                        <field data-type="string" keep="false">block_cd</field>
+                        <field data-type="string" keep="false">woff_dt</field>
+                        <field data-type="string" keep="false">bill_cd</field>
+                        <field data-type="string" keep="false">as_of_dt</field>
+                        <field data-type="boolean" keep="false">valid</field>
+                        <field data-type="string" keep="false">error_message</field>
+                        <field data-type="string" keep="false">profileData</field>
+                        <field data-type="string" keep="true">counter</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CDEBatchCcSpcPerfMetrics</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream stream-type="error">
+                    <stream-id>s-3-E</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">error-message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CommonError</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.script.ScriptStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" are-builtin-fields-for-error-stream="true" xsi:type="script-job-step">
+            <description>The script job step uses JSR223 specification implemented in JDK to execute different languages script and get result added to the output stream.</description>
+            <job-step-id>ErrorCounter</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="script-job-step-params">
+                    <functionScript>
+                        <![CDATA[function initializeTuple() {
+}
+function executeIteration() {
+    return "Error";
+}]]>
+                    </functionScript>
+                    <functionLanguage>JAVASCRIPT</functionLanguage>
+                    <error-stream-name>s-4-E</error-stream-name>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="script-input-js-required-field">
+                                <name>script-input-field</name>
+                                <input-field>error-message</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="script-js-generated-field">
+                                <output-stream-id>s-7-B</output-stream-id>
+                                <name>script-output-field</name>
+                                <output-field>counter</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-7-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="false">error-message</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="any" keep="false">error-tuple</field>
+                        <field data-type="string" keep="false">as_of_dt</field>
+                        <field data-type="string" keep="true">counter</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CDEBatchCcSpcPerfMetrics</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream stream-type="error">
+                    <stream-id>s-4-E</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">error-message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CommonError</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.script.ScriptStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" xsi:type="visualization-store-job-step">
+            <description>Indexes data into elasticsearch for the given elasticsearch type.</description>
+            <job-step-id>CommonError</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="visualization-store-job-step-params">
+                    <es-type-name>CommonError</es-type-name>
+                    <batch-size>100</batch-size>
+                    <idle-time>5</idle-time>
+                </job-step-params>
+            </configuration>
+            <step-type>OUTBOUND</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.visualization.VisualizationStoreStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>true</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" xsi:type="visualization-store-job-step">
+            <description>Indexes data into elasticsearch for the given elasticsearch type.</description>
+            <job-step-id>CDEBatchCcSpcPerfMetrics</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="visualization-store-job-step-params">
+                    <es-type-name>CDEBatchCcSpcPerfMetrics</es-type-name>
+                    <batch-size>100</batch-size>
+                    <idle-time>5</idle-time>
+                </job-step-params>
+            </configuration>
+            <step-type>OUTBOUND</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.visualization.VisualizationStoreStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>true</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" are-builtin-fields-for-error-stream="true" xsi:type="script-job-step">
+            <description>The script job step uses JSR223 specification implemented in JDK to execute different languages script and get result added to the output stream.</description>
+            <job-step-id>Validations</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="script-job-step-params">
+                    <functionScript>
+                        <![CDATA[var errorMessage = null;
+var iteration = 0;
+function isNumeric(name, value) {
+    if ("" !== value) {
+        if (isNaN(value)) {
+            errorMessage = "Numeric value expected: " + name;
+		    return false;
+        }
+    }
+    return true;
+}
+
+function checkMandatoryKey(name, value) {
+    if (!value || 0 === value.length) {
+        errorMessage = "Mandatory value expected: " + name;
+        return false;
+    }
+    return true;
+}
+
+function checkValidValue(name, value) {
+    if ("NULL" === value.toUpperCase()) {
+        errorMessage = "NULL value is not valid: " + name;
+        return false;
+    }
+    return true;
+}
+
+function checkValidDate(name, value) {
+    try {
+        var date = new Date(value);
+        date = "" + date.toISOString().split('T')[0];
+    } catch (err) {
+        errorMessage = "Date format error: " + name;
+        return false;
+    }
+    return true;
+}
+function initializeTuple() {
+    errorMessage = null;
+    iteration = 0;
+}
+function executeIteration(cust_id, cust_id_type_desc, rm_id, acct_num, open_dt, oc_cust, oc_acct, prod_cd, sub_prod_cd, acct_sts, cr_limit_amt, stmt_bal, 
+    crrnt_bal, _5_pdue_amt, _30_pdue_amt, _60_pdue_amt, _90_pdue_amt, _120_pdue_amt, _150_pdue_amt, _180_pdue_amt, _210_pdue_amt,
+    block_cd, woff_dt, bill_cd, as_of_dt) {
+	iteration++;
+	if(iteration==1){
+		var valid = checkMandatoryKey("cust_id", cust_id) &&    
+                checkValidValue("cust_id", cust_id) &&
+                checkMandatoryKey("cust_id_type_desc", cust_id_type_desc) &&
+                checkValidValue("cust_id_type_desc", cust_id_type_desc) &&
+				checkValidValue("rm_id", rm_id) &&
+				checkValidValue("acct_num",acct_num) &&
+				checkValidValue("open_dt",open_dt) &&
+				checkValidValue("oc_cust",oc_cust) &&
+				checkValidValue("oc_acct",oc_acct) &&
+				checkValidValue("prod_cd",prod_cd) &&
+				checkValidValue("sub_prod_cd",sub_prod_cd) &&
+				checkValidValue("acct_sts",acct_sts) &&
+				isNumeric("cr_limit_amt",cr_limit_amt) &&
+				isNumeric("stmt_bal",stmt_bal) &&
+				isNumeric("crrnt_bal",crrnt_bal) &&
+				isNumeric("_5_pdue_amt",_5_pdue_amt) &&
+				isNumeric("_30_pdue_amt",_30_pdue_amt) &&
+				isNumeric("_60_pdue_amt",_60_pdue_amt) &&
+				isNumeric("_90_pdue_amt",_90_pdue_amt) &&
+				isNumeric("_120_pdue_amt",_120_pdue_amt) &&
+				isNumeric("_150_pdue_amt",_150_pdue_amt) &&
+				isNumeric("_180_pdue_amt",_180_pdue_amt) &&
+				isNumeric("_210_pdue_amt",_210_pdue_amt) &&
+				checkValidValue("block_cd",block_cd) &&
+				checkValidValue("woff_dt",woff_dt) &&
+				checkValidValue("bill_cd",bill_cd) &&
+				checkValidDate("as_of_dt",as_of_dt);
+
+		return valid;
+	}
+	else {
+        return errorMessage;
+    }
+}]]>
+                    </functionScript>
+                    <functionLanguage>JAVASCRIPT</functionLanguage>
+                    <error-stream-name>s-5-E</error-stream-name>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="script-input-js-required-field">
+                                <name>script-input-field</name>
+                                <input-field>cust_id</input-field>
+                                <input-field>cust_id_type_desc</input-field>
+                                <input-field>rm_id</input-field>
+                                <input-field>acct_num</input-field>
+                                <input-field>open_dt</input-field>
+                                <input-field>oc_cust</input-field>
+                                <input-field>oc_acct</input-field>
+                                <input-field>prod_cd</input-field>
+                                <input-field>sub_prod_cd</input-field>
+                                <input-field>acct_sts</input-field>
+                                <input-field>cr_limit_amt</input-field>
+                                <input-field>stmt_bal</input-field>
+                                <input-field>crrnt_bal</input-field>
+                                <input-field>5_pdue_amt</input-field>
+                                <input-field>30_pdue_amt</input-field>
+                                <input-field>60_pdue_amt</input-field>
+                                <input-field>90_pdue_amt</input-field>
+                                <input-field>120_pdue_amt</input-field>
+                                <input-field>150_pdue_amt</input-field>
+                                <input-field>180_pdue_amt</input-field>
+                                <input-field>210_pdue_amt</input-field>
+                                <input-field>block_cd</input-field>
+                                <input-field>woff_dt</input-field>
+                                <input-field>bill_cd</input-field>
+                                <input-field>as_of_dt</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="script-js-generated-field">
+                                <output-stream-id>CheckIfValid</output-stream-id>
+                                <name>script-output-field</name>
+                                <output-field>valid</output-field>
+                                <data-type>boolean</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="script-input-js-required-field">
+                                <name>script-input-field</name>
+                                <input-field>cust_id</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="script-js-generated-field">
+                                <output-stream-id>CheckIfValid</output-stream-id>
+                                <name>script-output-field</name>
+                                <output-field>error_message</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream stream-type="error">
+                    <stream-id>s-5-E</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">error-message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CommonError</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream>
+                    <stream-id>CheckIfValid</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="true">cust_id_type_desc</field>
+                        <field data-type="string" keep="true">rm_id</field>
+                        <field data-type="string" keep="true">acct_num</field>
+                        <field data-type="string" keep="true">open_dt</field>
+                        <field data-type="string" keep="true">oc_cust</field>
+                        <field data-type="string" keep="true">oc_acct</field>
+                        <field data-type="string" keep="true">prod_cd</field>
+                        <field data-type="string" keep="true">sub_prod_cd</field>
+                        <field data-type="string" keep="true">acct_sts</field>
+                        <field data-type="string" keep="true">cr_limit_amt</field>
+                        <field data-type="string" keep="true">stmt_bal</field>
+                        <field data-type="string" keep="true">crrnt_bal</field>
+                        <field data-type="string" keep="true">5_pdue_amt</field>
+                        <field data-type="string" keep="true">30_pdue_amt</field>
+                        <field data-type="string" keep="true">60_pdue_amt</field>
+                        <field data-type="string" keep="true">90_pdue_amt</field>
+                        <field data-type="string" keep="true">120_pdue_amt</field>
+                        <field data-type="string" keep="true">150_pdue_amt</field>
+                        <field data-type="string" keep="true">180_pdue_amt</field>
+                        <field data-type="string" keep="true">210_pdue_amt</field>
+                        <field data-type="string" keep="true">block_cd</field>
+                        <field data-type="string" keep="true">woff_dt</field>
+                        <field data-type="string" keep="true">bill_cd</field>
+                        <field data-type="string" keep="true">as_of_dt</field>
+                        <field data-type="boolean" keep="true">valid</field>
+                        <field data-type="string" keep="true">error_message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>Validation-Flow</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.script.ScriptStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" are-builtin-fields-for-error-stream="true" processing-iteration-count="0" xsi:type="routing-job-step">
+            <description>The routing job step takes the incoming tuples and route them on separate output streams by writing expressions that control which tuples go on which output streams.</description>
+            <job-step-id>Validation-Flow</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="routing-job-step-params">
+                    <functionScript>
+                        <![CDATA[function filter(fields) {
+    var map = {};
+    map['validStream'] = fields.get('valid') === true;
+    map['inValidStream'] = fields.get('valid') !== true;
+    return map;
+}]]>
+                    </functionScript>
+                    <functionLanguage>JAVASCRIPT</functionLanguage>
+                    <error-stream-name>s-6-E</error-stream-name>
+                </job-step-params>
+            </configuration>
+            <job-step-links>
+                <out-stream stream-type="error">
+                    <stream-id>s-6-E</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">error-message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CommonError</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream>
+                    <stream-id>validStream</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="true">cust_id_type_desc</field>
+                        <field data-type="string" keep="true">rm_id</field>
+                        <field data-type="string" keep="true">acct_num</field>
+                        <field data-type="string" keep="true">open_dt</field>
+                        <field data-type="string" keep="true">oc_cust</field>
+                        <field data-type="string" keep="true">oc_acct</field>
+                        <field data-type="string" keep="true">prod_cd</field>
+                        <field data-type="string" keep="true">sub_prod_cd</field>
+                        <field data-type="string" keep="true">acct_sts</field>
+                        <field data-type="string" keep="true">cr_limit_amt</field>
+                        <field data-type="string" keep="true">stmt_bal</field>
+                        <field data-type="string" keep="true">crrnt_bal</field>
+                        <field data-type="string" keep="true">5_pdue_amt</field>
+                        <field data-type="string" keep="true">30_pdue_amt</field>
+                        <field data-type="string" keep="true">60_pdue_amt</field>
+                        <field data-type="string" keep="true">90_pdue_amt</field>
+                        <field data-type="string" keep="true">120_pdue_amt</field>
+                        <field data-type="string" keep="true">150_pdue_amt</field>
+                        <field data-type="string" keep="true">180_pdue_amt</field>
+                        <field data-type="string" keep="true">210_pdue_amt</field>
+                        <field data-type="string" keep="true">block_cd</field>
+                        <field data-type="string" keep="true">woff_dt</field>
+                        <field data-type="string" keep="true">bill_cd</field>
+                        <field data-type="string" keep="true">as_of_dt</field>
+                        <field data-type="boolean" keep="true">valid</field>
+                        <field data-type="string" keep="true">error_message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CreateNUpdate-Performance-ContextualProfile</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream>
+                    <stream-id>inValidStream</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="true">cust_id_type_desc</field>
+                        <field data-type="string" keep="true">rm_id</field>
+                        <field data-type="string" keep="true">acct_num</field>
+                        <field data-type="string" keep="true">open_dt</field>
+                        <field data-type="string" keep="true">oc_cust</field>
+                        <field data-type="string" keep="true">oc_acct</field>
+                        <field data-type="string" keep="true">prod_cd</field>
+                        <field data-type="string" keep="true">sub_prod_cd</field>
+                        <field data-type="string" keep="true">acct_sts</field>
+                        <field data-type="string" keep="true">cr_limit_amt</field>
+                        <field data-type="string" keep="true">stmt_bal</field>
+                        <field data-type="string" keep="true">crrnt_bal</field>
+                        <field data-type="string" keep="true">5_pdue_amt</field>
+                        <field data-type="string" keep="true">30_pdue_amt</field>
+                        <field data-type="string" keep="true">60_pdue_amt</field>
+                        <field data-type="string" keep="true">90_pdue_amt</field>
+                        <field data-type="string" keep="true">120_pdue_amt</field>
+                        <field data-type="string" keep="true">150_pdue_amt</field>
+                        <field data-type="string" keep="true">180_pdue_amt</field>
+                        <field data-type="string" keep="true">210_pdue_amt</field>
+                        <field data-type="string" keep="true">block_cd</field>
+                        <field data-type="string" keep="true">woff_dt</field>
+                        <field data-type="string" keep="true">bill_cd</field>
+                        <field data-type="string" keep="true">as_of_dt</field>
+                        <field data-type="boolean" keep="true">valid</field>
+                        <field data-type="string" keep="true">error_message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>InvalidRecords</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                        <stream-consumer>
+                            <consuming-job-step-id>ValidationErrorCounter</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>FULL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.routing.RoutingStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" xsi:type="visualization-store-job-step">
+            <description>Indexes data into elasticsearch for the given elasticsearch type.</description>
+            <job-step-id>InvalidRecords</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="visualization-store-job-step-params">
+                    <es-type-name>InvalidRecords</es-type-name>
+                    <batch-size>100</batch-size>
+                    <idle-time>5</idle-time>
+                </job-step-params>
+            </configuration>
+            <step-type>OUTBOUND</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.visualization.VisualizationStoreStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>true</requires-data-source>
+        </job-step>
+        <job-step parallelism-hint="1" are-builtin-fields-for-error-stream="true" xsi:type="script-job-step">
+            <description>The script job step uses JSR223 specification implemented in JDK to execute different languages script and get result added to the output stream.</description>
+            <job-step-id>ValidationErrorCounter</job-step-id>
+            <job-step-version>
+                <version>1.0</version>
+                <dmip-version-since>1.0</dmip-version-since>
+                <organization>FICO</organization>
+            </job-step-version>
+            <configuration>
+                <job-step-params xsi:type="script-job-step-params">
+                    <functionScript>
+                        <![CDATA[function initializeTuple() {
+}
+function executeIteration() {
+    return "Error";
+}]]>
+                    </functionScript>
+                    <functionLanguage>JAVASCRIPT</functionLanguage>
+                    <error-stream-name>s-7-E</error-stream-name>
+                </job-step-params>
+                <processing-units>
+                    <processing-unit>
+                        <required-fields>
+                            <required-field xsi:type="script-input-js-required-field">
+                                <name>script-input-field</name>
+                                <input-field>cust_id</input-field>
+                            </required-field>
+                        </required-fields>
+                        <generated-fields>
+                            <generated-field xsi:type="script-js-generated-field">
+                                <output-stream-id>s-8-B</output-stream-id>
+                                <name>script-output-field</name>
+                                <output-field>counter</output-field>
+                                <data-type>string</data-type>
+                            </generated-field>
+                        </generated-fields>
+                    </processing-unit>
+                </processing-units>
+            </configuration>
+            <job-step-links>
+                <out-stream>
+                    <stream-id>s-8-B</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="false">creditCardPerformanceLineEntry</field>
+                        <field data-type="string" keep="true">cust_id</field>
+                        <field data-type="string" keep="false">cust_id_type_desc</field>
+                        <field data-type="string" keep="false">rm_id</field>
+                        <field data-type="string" keep="false">acct_num</field>
+                        <field data-type="string" keep="false">open_dt</field>
+                        <field data-type="string" keep="false">oc_cust</field>
+                        <field data-type="string" keep="false">oc_acct</field>
+                        <field data-type="string" keep="false">prod_cd</field>
+                        <field data-type="string" keep="false">sub_prod_cd</field>
+                        <field data-type="string" keep="false">acct_sts</field>
+                        <field data-type="string" keep="false">cr_limit_amt</field>
+                        <field data-type="string" keep="false">stmt_bal</field>
+                        <field data-type="string" keep="false">crrnt_bal</field>
+                        <field data-type="string" keep="false">5_pdue_amt</field>
+                        <field data-type="string" keep="false">30_pdue_amt</field>
+                        <field data-type="string" keep="false">60_pdue_amt</field>
+                        <field data-type="string" keep="false">90_pdue_amt</field>
+                        <field data-type="string" keep="false">120_pdue_amt</field>
+                        <field data-type="string" keep="false">150_pdue_amt</field>
+                        <field data-type="string" keep="false">180_pdue_amt</field>
+                        <field data-type="string" keep="false">210_pdue_amt</field>
+                        <field data-type="string" keep="false">block_cd</field>
+                        <field data-type="string" keep="false">woff_dt</field>
+                        <field data-type="string" keep="false">bill_cd</field>
+                        <field data-type="string" keep="false">as_of_dt</field>
+                        <field data-type="boolean" keep="false">valid</field>
+                        <field data-type="string" keep="false">error_message</field>
+                        <field data-type="string" keep="true">counter</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CDEBatchCcSpcPerfMetrics</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+                <out-stream stream-type="error">
+                    <stream-id>s-7-E</stream-id>
+                    <output-fields>
+                        <field data-type="string" keep="true">error-message</field>
+                    </output-fields>
+                    <stream-consumers>
+                        <stream-consumer>
+                            <consuming-job-step-id>CommonError</consuming-job-step-id>
+                            <grouping-by>SHUFFLE</grouping-by>
+                        </stream-consumer>
+                    </stream-consumers>
+                </out-stream>
+            </job-step-links>
+            <step-type>TRANSFORMATION</step-type>
+            <tuple-processing-type>PARTIAL</tuple-processing-type>
+            <job-step-builder-class>com.fico.dmip.procjobstep.script.ScriptStrategyBuilder</job-step-builder-class>
+            <schedulable>false</schedulable>
+            <requires-data-source>false</requires-data-source>
+        </job-step>
+    </job-steps>
+</job-specification>
