@@ -9,7 +9,7 @@
         <organization>FICO</organization>
     </job-specification-version>
     <name>CDEBatchCcSpcPerformanceV1</name>
-    <description>Credit Card performance batch job</description>
+    <description>Credit Card performance batch job testing git</description>
     <job-params>
         <parameter>
             <name>dmip.state.qos.consistency</name>
